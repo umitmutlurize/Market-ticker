@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:marketticker/models/priceModel.dart';
@@ -12,16 +14,20 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   ApiService apiService = ApiService();
 
+  getPref(int index) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
 
-
-  _incrementCounter(List<String> value) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-  Future<bool> vss = prefs.setStringList("previous-values", value);
-
-    await prefs.setInt('counter', counter);
+    List<String>? value = preferences.getStringList("value");
+    print('değerimiz  :$value');
+    return value![index];
   }
 
-
+  savePref(List<String> value) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    setState(() {
+      preferences.setStringList("value", value);
+    });
+  }
 
   Future<Data> refreshButton() async {
     final response = await apiService.getAllData();
@@ -30,6 +36,11 @@ class _HomeViewState extends State<HomeView> {
     return refreshResponse;
   }
 
+  @override
+  void initState() {
+    getPref(2);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,50 +69,57 @@ class _HomeViewState extends State<HomeView> {
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return ListView.builder(
-                  itemCount: snapshot.data!.rates!.length,
-                  itemBuilder: (context, index) {
-                    _incrementCounter(snapshot.data!.rates!.values.toList())
-                 return  Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          RichText(
-                            text: TextSpan(
-                                text: snapshot.data!.rates!.keys.toList()[index],
-                                style: TextStyle(color: Colors.white70),
-                                children: <InlineSpan>[
-                                  TextSpan(
-                                      text: '/EUR',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w200,
-                                          color: Colors.white.withOpacity(0.8)))
-                                ]),
-                          ),
-                          Text(
-                              snapshot.data!.rates!.values
-                                  .toList()[index]
-                                  .toString(),
-                              style:
-                              TextStyle(color: Colors.white, fontSize: 16)),
-                          Container(
-                            alignment: Alignment.center,
-                            height: MediaQuery.of(context).size.height * .05,
-                            width: MediaQuery.of(context).size.height * .09,
-                            decoration: BoxDecoration(
-                              color: Colors.lightGreenAccent,
-                              borderRadius: BorderRadius.circular(5),
+                    itemCount: snapshot.data!.rates!.length,
+                    itemBuilder: (context, index) {
+                      savePref(snapshot.data!.rates!.values
+                          .toList()
+                          .map((e) => '$e')
+                          .toList());
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            RichText(
+                              text: TextSpan(
+                                  text: snapshot.data!.rates!.keys
+                                      .toList()[index],
+                                  style: TextStyle(color: Colors.white70),
+                                  children: <InlineSpan>[
+                                    TextSpan(
+                                        text: '/${snapshot.data!.base}',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w200,
+                                            color:
+                                                Colors.white.withOpacity(0.8)))
+                                  ]),
                             ),
-                            child: Text(
-                              'Percent %',
-                              textAlign: TextAlign.center,
-                            ),
-                          )
-                        ],
-                      ),
-                    );
-                  }
-                );
+                            Text(
+                                snapshot.data!.rates!.values
+                                    .toList()[index]
+                                    .toString(),
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16)),
+                            Container(
+                              alignment: Alignment.center,
+                              height: MediaQuery.of(context).size.height * .05,
+                              width: MediaQuery.of(context).size.height * .09,
+                              decoration: BoxDecoration(
+                                color: Colors.lightGreenAccent,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text(
+                                '${(100*(snapshot.data!.rates!.values.toList()
+                                [index]-double.parse(getPref(index))))
+                                    /snapshot.data!.rates!.values.toList()
+                                    [index]}',
+                                textAlign: TextAlign.center,
+                              ),
+                            )
+                          ],
+                        ),
+                      );
+                    });
               } else if (snapshot.hasError) {
                 return Text("${snapshot.error}");
               }

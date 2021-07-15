@@ -1,12 +1,11 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:marketticker/models/priceModel.dart';
 
 class ApiService{
   Future<dynamic> getAllData() async {
     final response =
-    await http.get(Uri.parse('http://api.exchangeratesapi.io/v1/latest?access_key=1489f211835469ffdb27f0186d2a88bd'));
+    await http.get(Uri.parse('http://api.exchangeratesapi.io/v1/latest?access_key=94416d8ac0fd69db86c8b130324e16ea'));
 
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response,
