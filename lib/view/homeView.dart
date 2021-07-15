@@ -14,20 +14,6 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   ApiService apiService = ApiService();
 
-  getPref(int index) async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-
-    List<String>? value = preferences.getStringList("value");
-    print('değerimiz  :$value');
-    return value![index];
-  }
-
-  savePref(List<String> value) async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    setState(() {
-      preferences.setStringList("value", value);
-    });
-  }
 
   Future<Data> refreshButton() async {
     final response = await apiService.getAllData();
@@ -38,7 +24,6 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   void initState() {
-    getPref(2);
     super.initState();
   }
 
@@ -71,10 +56,6 @@ class _HomeViewState extends State<HomeView> {
                 return ListView.builder(
                     itemCount: snapshot.data!.rates!.length,
                     itemBuilder: (context, index) {
-                      savePref(snapshot.data!.rates!.values
-                          .toList()
-                          .map((e) => '$e')
-                          .toList());
                       return Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
@@ -95,9 +76,8 @@ class _HomeViewState extends State<HomeView> {
                                   ]),
                             ),
                             Text(
-                                snapshot.data!.rates!.values
-                                    .toList()[index]
-                                    .toString(),
+                            snapshot.data!.rates!.values.toList()[index]
+                                .endRate.toString(),
                                 style: TextStyle(
                                     color: Colors.white, fontSize: 16)),
                             Container(
@@ -105,14 +85,12 @@ class _HomeViewState extends State<HomeView> {
                               height: MediaQuery.of(context).size.height * .05,
                               width: MediaQuery.of(context).size.height * .09,
                               decoration: BoxDecoration(
-                                color: Colors.lightGreenAccent,
+                                color: Colors.greenAccent,
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
-                                '${(100*(snapshot.data!.rates!.values.toList()
-                                [index]-double.parse(getPref(index))))
-                                    /snapshot.data!.rates!.values.toList()
-                                    [index]}',
+                                snapshot.data!.rates!.values.toList()[index]
+                                    .changePct.toString(),
                                 textAlign: TextAlign.center,
                               ),
                             )

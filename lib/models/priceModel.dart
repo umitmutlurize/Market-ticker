@@ -1,37 +1,73 @@
+// To parse this JSON data, do
+//
+//     final data = dataFromJson(jsonString);
+
 import 'dart:convert';
 
-Data userFromJson(String str) => Data.fromJson(json.decode(str));
+Data dataFromJson(String str) => Data.fromJson(json.decode(str));
 
-String userToJson(Data data) => json.encode(data.toJson());
+String dataToJson(Data data) => json.encode(data.toJson());
 
 class Data {
   Data({
     this.success,
-    this.timestamp,
+    this.fluctuation,
+    this.startDate,
+    this.endDate,
     this.base,
-    this.date,
     this.rates,
   });
 
   bool? success;
-  int? timestamp;
+  bool? fluctuation;
+  DateTime? startDate;
+  DateTime? endDate;
   String? base;
-  DateTime? date;
-  Map<String, double>? rates;
+  Map<String, Rate>? rates;
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
     success: json["success"],
-    timestamp: json["timestamp"],
+    fluctuation: json["fluctuation"],
+    startDate: DateTime.parse(json["start_date"]),
+    endDate: DateTime.parse(json["end_date"]),
     base: json["base"],
-    date: DateTime.parse(json["date"]),
-    rates: Map.from(json["rates"]).map((k, v) => MapEntry<String, double>(k, v.toDouble())),
+    rates: Map.from(json["rates"]).map((k, v) => MapEntry<String, Rate>(k, Rate.fromJson(v))),
   );
 
   Map<String, dynamic> toJson() => {
     "success": success,
-    "timestamp": timestamp,
+    "fluctuation": fluctuation,
+    "start_date": "${startDate!.year.toString().padLeft(4, '0')}-${startDate!.month.toString().padLeft(2, '0')}-${startDate!.day.toString().padLeft(2, '0')}",
+    "end_date": "${endDate!.year.toString().padLeft(4, '0')}-${endDate!.month.toString().padLeft(2, '0')}-${endDate!.day.toString().padLeft(2, '0')}",
     "base": base,
-    "date": "${date!.year.toString().padLeft(4, '0')}-${date!.month.toString().padLeft(2, '0')}-${date!.day.toString().padLeft(2, '0')}",
-    "rates": Map.from(rates!).map((k, v) => MapEntry<String, dynamic>(k, v)),
+    "rates": Map.from(rates!).map((k, v) => MapEntry<String, dynamic>(k, v.toJson())),
+  };
+}
+
+class Rate {
+  Rate({
+    this.startRate,
+    this.endRate,
+    this.change,
+    this.changePct,
+  });
+
+  double? startRate;
+  double? endRate;
+  double? change;
+  double? changePct;
+
+  factory Rate.fromJson(Map<String, dynamic> json) => Rate(
+    startRate: json["start_rate"].toDouble(),
+    endRate: json["end_rate"].toDouble(),
+    change: json["change"].toDouble(),
+    changePct: json["change_pct"].toDouble(),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "start_rate": startRate,
+    "end_rate": endRate,
+    "change": change,
+    "change_pct": changePct,
   };
 }
